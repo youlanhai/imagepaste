@@ -1,4 +1,4 @@
-Ima![](README/README0.png)gePaste
+ImagePaste
 ==========
 
 Paste image from clipboard, save the image to a file and insert the relative path on the current cursor.

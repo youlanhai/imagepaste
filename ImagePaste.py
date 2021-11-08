@@ -5,10 +5,10 @@ import sys
 import re
 import subprocess
 import shutil
-from imp import reload
+# from imp import reload
 
-print(sys.getdefaultencoding())
-reload(sys)
+# print(sys.getdefaultencoding())
+# reload(sys)
 # sys.setdefaultencoding('utf-8')
 
 if sys.platform == 'win32':
@@ -31,7 +31,8 @@ class ImageCommand(object):
 		self.image_dir_name = self.settings.get('image_dir_name', None)
 		if len(self.image_dir_name) == 0:
 			self.image_dir_name = None
-		print("[%d] get image_dir_name: %r"%(id(self.image_dir_name), self.image_dir_name))
+		else:
+			print("[%d] get image_dir_name: %r" % (id(self.image_dir_name), self.image_dir_name))
 
 	def run_command(self, cmd):
 		cwd = os.path.dirname(self.view.file_name())
@@ -94,6 +95,7 @@ class ImagePasteCommand(ImageCommand, sublime_plugin.TextCommand):
 				view.insert(edit, pos.begin(), "%s" % rel_fn)
 			# only the first cursor add the path
 			break
+		
 			
 
 	def paste(self):
@@ -187,9 +189,8 @@ class ImagePreviewCommand(ImageCommand, sublime_plugin.TextCommand):
 	def run(self, edit):
 		print("run phantom")
 		view = self.view
-		dirname = os.path.dirname(__file__)
 		for tp, line in self.get_line():
-			m=re.search(r'!\[([^\]]*)\]\(([^)]*)\)', line)
+			m = re.search(r'!\[([^\]]*)\]\(([^)]*)\)', line)
 			if m:
 				name, file1 = m.group(1), m.group(2)
 				message = ""
@@ -197,13 +198,8 @@ class ImagePreviewCommand(ImageCommand, sublime_plugin.TextCommand):
 				# print("%s = %s" % (name, file1))
 				region = tp
 
-				command = ['/usr/bin/python3', os.path.join(dirname, 'bin/imageutil.py'), 'size']
-				command.append(file2)
+				widthstr, heightstr = self.get_image_size(file2)
 
-				out = self.run_command(" ".join(command))
-				widthstr, heightstr = out.split(',')
-				# with Image.open(file2) as im:
-				# print("file: %s with size: %d %d" % (file1, im.width, im.height))
 				message = '''<body>
 				<img width="%s" height="%s" src="file://%s"></img>
 				</body>''' % (widthstr, heightstr, file2)
@@ -220,3 +216,21 @@ class ImagePreviewCommand(ImageCommand, sublime_plugin.TextCommand):
 		# view.show_popup('<img src="file://c://msys64/home/chenyu/diary/diary/diary8.jpg">')
 		self.displayed = not self.displayed
 
+	def get_image_size(self, filename):
+		widthstr, heightstr = "100", "100"
+		try:
+			if sys.platform != 'win32':
+				dirname = os.path.dirname(__file__)
+				command = ['/usr/bin/python3', os.path.join(dirname, 'bin/imageutil.py'), 'size']
+				command.append(filename)
+
+				out = self.run_command(" ".join(command))
+				widthstr, heightstr = out.split(',')
+			else:
+				with Image.open(filename) as im:
+					# print("file: %s with size: %d %d" % (file1, im.width, im.height))
+					widthstr = str(im.width)
+					heightstr = str(im.hei)
+		except Exception as e:
+			print(e)
+		return widthstr, heightstr
