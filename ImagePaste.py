@@ -16,8 +16,9 @@ if sys.platform == 'win32':
 	package_path = os.path.dirname(package_file)
 	lib_path =  os.path.join(package_path, "lib")
 	if lib_path not in sys.path:
-	    sys.path.append(lib_path)
+	    sys.path.insert(0, lib_path)
 	    print(sys.path)
+
 	from PIL import ImageGrab
 	from PIL import ImageFile
 	from PIL import Image
